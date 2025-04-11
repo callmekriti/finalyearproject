@@ -37,17 +37,17 @@ function Main() {
           <StatCard
             icon={<FaMoneyBillTransfer />}
             title="Total Sales"
-            value={analyticsData.total_income}
+            value={analyticsData?.total_income}
           />
           <StatCard
             icon={<IoIosPeople />}
             title="Total Members"
-            value={analyticsData.member_count}
+            value={analyticsData?.member_count}
           />
           <StatCard
             icon={<FaMoneyBillTransfer />}
             title="Total Expense"
-            value={analyticsData.total_expenses}
+            value={analyticsData?.total_expenses}
           />
         </div>
         <div className="pl-5">

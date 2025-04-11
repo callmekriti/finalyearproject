@@ -13,7 +13,7 @@ const AttendanceForm = () => {
 
     try {
       // Send the username to the check-in endpoint
-      const response = await axios.post('/api/attendance/', { username });  // Assuming /api/attendance/ is your endpoint
+      const response = await axios.post('http://localhost:8000/attendance/', { username });  // Assuming /api/attendance/ is your endpoint
 
       if (response.status === 201) {
         setMessage(response.data.message); // Display the success message from the backend
