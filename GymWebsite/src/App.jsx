@@ -14,6 +14,7 @@ import Signup from "./components/website/SignUp.jsx";
 import Dashboard from "./components/website/Dashboard.jsx"
 import TrainerDashboard from "./components/website/TrainerDashboard.jsx";
 import AttendanceForm from "./components/website/AttendanceForm.jsx";
+import AttendancePage from "./components/admin/attendance/Attendance.jsx";
 // Lazy loading components
 const Sidebar = lazy(() => import("./components/admin/sidebar/Sidebar"));
 const Member = lazy(() => import("./components/admin/member/Member"));
@@ -129,6 +130,7 @@ function App() {
               <Route path="trainers" element={<Trainer />} />
               <Route path="transactions" element={<Transaction />} />
               <Route path="events" element={<Events savedEvents={savedEvents} />} />
+              <Route path="attendance" element={<AttendancePage/>} />
               <Route path="analytics" element={<Report />} />
             </Route>
 

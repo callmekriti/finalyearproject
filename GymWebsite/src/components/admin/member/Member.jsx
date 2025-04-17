@@ -31,14 +31,14 @@ function Member() {
         <SearchButton onSearch={setSearch} />
 
         <div className="mt-5 mb-4">
-          <motion.button
+          {/* <motion.button
             className="bg-indigo-500 text-white px-3 py-1 rounded-md"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => (modalOpen ? close() : open())}
           >
             Add Member
-          </motion.button>
+          </motion.button> */}
 
           {modalOpen && (
             <AddMember

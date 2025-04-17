@@ -65,6 +65,12 @@ function Sidebar() {
                 Events
               </span>
             </Link>
+            <Link to="/admin/attendance" className="flex items-center gap-3">
+              <MdAnalytics className="text-2xl text-orange-500"/>
+              <span className="hidden font-Roboto sm:flex text-slate-600 hover:text-slate-400 cursor-pointer">
+                Attendance
+              </span>
+            </Link>
             <Link to="/admin/analytics" className="flex items-center gap-3">
               <MdAnalytics className="text-2xl text-orange-500"/>
               <span className="hidden font-Roboto sm:flex text-slate-600 hover:text-slate-400 cursor-pointer">
