@@ -168,6 +168,8 @@ class MembershipTypeViewSet(viewsets.ModelViewSet):
             "statusCode": 200,
             "message": "Data retrieved successfully!"
         })
+
+
 class AttendanceViewSet(viewsets.ViewSet):
     """
     ViewSet for managing attendance records.  Username-based check-in (less secure).
@@ -233,7 +235,8 @@ class AttendanceViewSet(viewsets.ViewSet):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            member = Members.objects.get(username=username)
+            user = User.objects.get(username=username)
+            member = Members.objects.get(email=user.email)
         except Members.DoesNotExist:
             return Response({
                 "data": None,
@@ -286,35 +289,63 @@ class AttendanceViewSet(viewsets.ViewSet):
             "statusCode": 200,
             "message": "Attendance records retrieved successfully."
         })
-
-    def retrieve(self, request, pk=None):
+    
+    @action(detail=False, methods=['get'])
+    def get_by_user(self, request):
         """
-        Retrieve a specific attendance record. Requires username parameter for validation
+        Retrieve attendance records based on username.
         """
 
         username = request.query_params.get('username')
+        print(username)
         if not username:
-          return Response({"data": None, "statusCode": 400, "message": "Username must be provided in query parameters"})
+            return Response({
+                "data": None,
+                "statusCode": 400,
+                "message": "Username is required as a query parameter."
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-          user = User.objects.get(username=username)
-          member=Members.objects.get(email=user.email)
-        except User.DoesNotExist:
-          return Response({"data": None, "statusCode": 404, "message": "Member not found"})
-
-        try:
-            attendance_record = Attendance.objects.get(pk=pk, member=member) # Ensure the member owns the record
-        except Attendance.DoesNotExist:
+            user = User.objects.get(username=username)
+            print(user)
+            member = Members.objects.get(email=user.email)
+            print(member)
+        except (User.DoesNotExist, Members.DoesNotExist):
             return Response({
                 "data": None,
                 "statusCode": 404,
-                "message": "Attendance record not found."
+                "message": "Member not found."
             }, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = AttendanceSerializer(attendance_record)
+        attendance_records = Attendance.objects.filter(member=member)
+        
+        serializer = AttendanceSerializer(attendance_records, many=True)  # Serialize multiple records
+
         return Response({
             "data": serializer.data,
             "statusCode": 200,
-            "message": "Attendance record retrieved successfully."
+            "message": "Attendance records retrieved successfully."
         })
+    
+    @action(detail=False, methods=['get'])
+    def present_today(self, request):
+        """
+        Lists all users who are currently checked in (time_out is None) on the current date.
+        """
+        today = timezone.now().date()
+        present_attendees = Attendance.objects.filter(date=today, time_out__isnull=True)
 
+        # Extract member IDs
+        member_ids = present_attendees.values_list('member_id', flat=True)
+
+        # Get member objects
+        members_records = Members.objects.filter(pk__in=member_ids)
+
+        members=MemberSerializer(members_records,many=True)
+        
+        return Response({
+            "data": members.data,
+            "statusCode": 200,
+            "message": "List of present users retrieved successfully."
+        })
+    

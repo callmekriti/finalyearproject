@@ -16,7 +16,7 @@ router.register(r'membershipTypes', MembershipTypeViewSet, basename='membership-
 urlpatterns = [
     # Token authentication endpoint
     path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
-
+    path('attendance/get_by_username/', AttendanceViewSet.as_view({'get': 'get_by_user'}), name='attendance-get-by-username'),
     # Include all router-generated URLs
     path('', include(router.urls)),
 ]
