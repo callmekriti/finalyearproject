@@ -1,12 +1,13 @@
-import React, { useContext,useState,useEffect } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import GlobalContext from "../../context/GlobalContext";
-import { FaMoneyBillTransfer } from "react-icons/fa6";
-import { IoIosPeople } from "react-icons/io";
+import { FaMoneyBillWave, FaUsers, FaChartLine } from "react-icons/fa";
+import { FiCalendar, FiDollarSign } from "react-icons/fi";
 import SmallCalendar from "../calendar/SmallCalendar";
 import DueTable from "./DueTable";
 import StatCard from "./StatCard";
 import BarGraph from "../report/BarGraph";
 import axios from "axios";
+
 function Main() {
   const { getTotalMembers, totalSalary, totalMembershipPrice } = useContext(GlobalContext);
   const [analyticsData, setAnalyticsData] = useState(null);
@@ -17,11 +18,10 @@ function Main() {
     const fetchData = async () => {
       try {
         const response = await axios.get('http://localhost:8000/analytics/');
-        console.log(response.data);
         setAnalyticsData(response.data.data);
         setLoading(false);
       } catch (err) {
-        setError(err);
+        setError("Failed to load analytics data");
         setLoading(false);
         console.error("Error fetching analytics:", err);
       }
@@ -30,38 +30,69 @@ function Main() {
     fetchData();
   }, []);
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col md:flex-row bg-slate-100 dark:bg-slate-100">
-      <section className="mt-3 mb-3 w-full md:w-[70%] h-full">
-        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 m-4">
+    <div className="flex flex-col lg:flex-row bg-gray-50 min-h-screen">
+      {/* Main Content Area */}
+      <div className="w-full lg:w-3/4 p-4 lg:p-6">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           <StatCard
-            icon={<FaMoneyBillTransfer />}
-            title="Total Sales"
-            value={analyticsData?.total_income}
+            icon={<FaMoneyBillWave className="text-blue-600" />}
+            title="Total Revenue"
+            value={`$${analyticsData?.total_income?.toLocaleString() || '0'}`}
+            trend="up"
+            trendValue="12%"
           />
           <StatCard
-            icon={<IoIosPeople />}
-            title="Total Members"
-            value={analyticsData?.member_count}
+            icon={<FaUsers className="text-green-600" />}
+            title="Active Members"
+            value={analyticsData?.member_count?.toLocaleString() || '0'}
+            trend="up"
+            trendValue="5%"
           />
           <StatCard
-            icon={<FaMoneyBillTransfer />}
-            title="Total Expense"
-            value={analyticsData?.total_expenses}
+            icon={<FiDollarSign className="text-red-600" />}
+            title="Total Expenses"
+            value={`$${analyticsData?.total_expenses?.toLocaleString() || '0'}`}
+            trend="down"
+            trendValue="3%"
           />
         </div>
-        <div className="pl-5">
+        
+        {/* Due Payments Table */}
+        <div className="mb-6">
           <DueTable />
         </div>
-      </section>
-      <section className="w-full  md:w-[30%] bg-indigo-100 dark:bg-slate-200 shadow-sm ">
-        <div className="bg-slate-100 rounded-md m-2 p-2">
+      </div>
+      
+      {/* Sidebar */}
+      <div className="w-full lg:w-1/4 p-4 lg:p-6 space-y-6">
+        {/* Calendar */}
+        <div className="bg-white rounded-lg shadow ">
+          <div className="flex items-center mb-4">
+            <FiCalendar className="text-gray-600 mr-2" />
+            <h3 className="text-lg font-medium text-gray-900">Calendar</h3>
+          </div>
           <SmallCalendar />
         </div>
-        <div className="bg-slate-100 m-2 shadow-sm rounded-xl  ">
-          {analyticsData && <BarGraph data={analyticsData}/>}
+        
+        {/* Analytics Graph */}
+        <div className="bg-white rounded-lg shadow ">
+          <div className="flex items-center mb-4">
+            <FaChartLine className="text-gray-600 mr-2" />
+            <h3 className="text-lg font-medium text-gray-900">Performance</h3>
+          </div>
+          {analyticsData && <BarGraph data={analyticsData} />}
         </div>
-      </section>
+      </div>
     </div>
   );
 }

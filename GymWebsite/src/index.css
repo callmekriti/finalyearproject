@@ -1,9 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-* {
-  font-family: 'Roboto Condensed', sans-serif;
+/* * {
+  font-family: 'Roboto Condensed', sans-serif , 'Noto Sans', sans-serif;;
+} */
+
+
+html, body {
+  font-family: 'Inter' sans-serif , ;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: #f3f4f6; 
 }

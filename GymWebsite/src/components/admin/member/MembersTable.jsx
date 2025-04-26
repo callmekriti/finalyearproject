@@ -1,48 +1,44 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { format } from "date-fns";
-import { MdDelete } from "react-icons/md";
-import { FaPenToSquare } from "react-icons/fa6";
+import { MdDelete, MdEdit } from "react-icons/md";
+import { FiUser } from "react-icons/fi";
 import GlobalContext from "../../context/GlobalContext";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function MembersTable({ searchQuery, onEdit }) {
   const [members, setMembers] = useState([]);
   const [filteredMembers, setFilteredMembers] = useState([]);
-  const [membershipTypes, setMembershipTypes] = useState([]); // Store membership types
+  const [membershipTypes, setMembershipTypes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { fetchMembersCount } = useContext(GlobalContext);
 
-  // Fetch members
+  // Fetch members and membership types
   useEffect(() => {
-    const fetchMembers = async () => {
+    const fetchData = async () => {
+      setLoading(true);
       try {
-        const response = await axios.get("http://127.0.0.1:8000/members/");
-        console.log("Members API Response:", response.data); // Debugging
-        setMembers(response?.data?.data || []);
-        setFilteredMembers(response?.data?.data || []);
+        const [membersRes, typesRes] = await Promise.all([
+          axios.get("http://127.0.0.1:8000/members/"),
+          axios.get("http://127.0.0.1:8000/membershipTypes/")
+        ]);
+        
+        setMembers(membersRes?.data?.data || []);
+        setFilteredMembers(membersRes?.data?.data || []);
+        setMembershipTypes(typesRes?.data?.data || []);
       } catch (error) {
-        console.error("Error fetching members:", error);
+        console.error("Error fetching data:", error);
+        toast.error("Failed to load member data");
         setMembers([]);
         setFilteredMembers([]);
-      }
-    };
-
-    fetchMembers();
-  }, []);
-
-  // Fetch membership types
-  useEffect(() => {
-    const fetchMembershipTypes = async () => {
-      try {
-        const response = await axios.get("http://127.0.0.1:8000/membershipTypes/");
-        console.log("Membership Types API Response:", response.data); // Debugging
-        setMembershipTypes(response?.data?.data || []); // Ensure it's an array
-      } catch (error) {
-        console.error("Error fetching membership types:", error);
         setMembershipTypes([]);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchMembershipTypes();
+    fetchData();
   }, []);
 
   // Filter members based on search query
@@ -51,8 +47,8 @@ function MembersTable({ searchQuery, onEdit }) {
       const lowerCaseQuery = searchQuery.toLowerCase();
       const filtered = members.filter(
         (member) =>
-          member.name.toLowerCase().includes(lowerCaseQuery) ||
-          member.email.toLowerCase().includes(lowerCaseQuery)
+          (member.name && member.name.toLowerCase().includes(lowerCaseQuery)) ||
+          (member.email && member.email.toLowerCase().includes(lowerCaseQuery))
       );
       setFilteredMembers(filtered);
     } else {
@@ -60,10 +56,14 @@ function MembersTable({ searchQuery, onEdit }) {
     }
   }, [searchQuery, members]);
 
-  // Function to delete a member
+  // Delete a member with confirmation
   const deleteMember = async (id) => {
     if (!id) {
-      console.error("No ID provided for deletion");
+      toast.error("No member selected for deletion");
+      return;
+    }
+
+    if (!window.confirm("Are you sure you want to delete this member?")) {
       return;
     }
 
@@ -74,100 +74,123 @@ function MembersTable({ searchQuery, onEdit }) {
         setMembers(updatedMembers);
         setFilteredMembers(updatedMembers);
         fetchMembersCount();
+        toast.success("Member deleted successfully");
       }
     } catch (error) {
       console.error("Error deleting member:", error);
+      toast.error("Failed to delete member");
     }
   };
 
+  // Get membership type name
+  const getMembershipType = (typeId) => {
+    const type = membershipTypes.find(t => t.membership_type_id === typeId);
+    return type?.type_name || "Unknown";
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <div className="overflow-x-auto shadow-lg rounded-md">
+    <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                ID
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Member
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Name
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Contact
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Email
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Membership
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Phone Number
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Dates
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Address
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Date of Birth
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Membership Type
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Start Date
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                End Date
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Action
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredMembers.map((member) => {
-              // Ensure membershipTypes is an array before using find()
-              const membershipType =
-                Array.isArray(membershipTypes) &&
-                membershipTypes.find(
-                  (type) => type.membership_type_id === member.membership_type
-                )?.type_name || "Unknown";
-
-              return (
-                <tr key={member.member_id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {member.member_id}
+            {filteredMembers.length === 0 ? (
+              <tr>
+                <td colSpan="10" className="px-6 py-4 text-center text-sm text-gray-500">
+                  {members.length === 0 ? "No members found" : "No matching members found"}
+                </td>
+              </tr>
+            ) : (
+              filteredMembers.map((member) => (
+                <tr key={member.member_id} className="hover:bg-gray-50 transition-colors duration-150">
+                  {/* Member Info */}
+                  <td className="px-6 py-4">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <FiUser className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">{member.name}</div>
+                        <div className="text-sm text-gray-500">ID: {member.member_id}</div>
+                      </div>
+                    </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{member.name}</td>
-                  <td className="px-3 py-4 whitespace-nowrap">
-                    {member.email}
+                  
+                  {/* Contact Info */}
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900">{member.email || 'N/A'}</div>
+                    <div className="text-sm text-gray-500">{member.phone_number || 'N/A'}</div>
+                    <div className="text-sm text-gray-500 truncate max-w-xs">{member.address || 'N/A'}</div>
                   </td>
-                  <td className="px-2 py-4 whitespace-nowrap">
-                    {member.phone_number}
+                  
+                  {/* Membership Info */}
+                  <td className="px-6 py-4">
+                    <div className="text-sm font-medium text-gray-900">
+                      {getMembershipType(member.membership_type)}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      DOB: {format(new Date(member.date_of_birth), "MMM d, yyyy")}
+                    </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {member.address}
+                  
+                  {/* Date Info */}
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900">
+                      <span className="font-medium">Start:</span> {format(new Date(member.membership_start_date), "MMM d, yyyy")}
+                    </div>
+                    <div className="text-sm text-gray-900">
+                      <span className="font-medium">End:</span> {format(new Date(member.membership_end_date), "MMM d, yyyy")}
+                    </div>
                   </td>
-                  <td className="px-3 py-4 whitespace-nowrap">
-                    {format(new Date(member.date_of_birth), "MM/dd/yyyy")}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {membershipType}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {format(new Date(member.membership_start_date), "MM/dd/yyyy")}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {format(new Date(member.membership_end_date), "MM/dd/yyyy")}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <button className="pl-0" onClick={() => onEdit(member)}>
-                      <FaPenToSquare />
-                    </button>
-                    <button
-                      className="pl-4"
-                      onClick={() => deleteMember(member.member_id)}
-                    >
-                      <MdDelete className="text-red-600 text-xl" />
-                    </button>
+                  
+                  {/* Actions */}
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex justify-end space-x-2">
+                      <button
+                        onClick={() => onEdit(member)}
+                        className="text-blue-600 hover:text-blue-900 p-1 rounded-full hover:bg-blue-50"
+                        title="Edit"
+                      >
+                        <MdEdit className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => deleteMember(member.member_id)}
+                        className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-50"
+                        title="Delete"
+                      >
+                        <MdDelete className="h-5 w-5" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
-              );
-            })}
+              ))
+            )}
           </tbody>
         </table>
       </div>

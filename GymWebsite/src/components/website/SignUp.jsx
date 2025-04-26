@@ -9,7 +9,7 @@ import { FaCheckCircle, FaExclamationTriangle, FaSpinner } from 'react-icons/fa'
 const InputField = ({ id, label, type, placeholder, value, onChange, required = true, hasError = false }) => (
     <div className="mb-5">
         <label
-            className="block text-gray-700 text-sm font-semibold mb-2"
+            className="block text-gray-700 text-sm font-semibold mb-2 font-serif"
             htmlFor={id}
         >
             {label}{required ? '*' : ''}: {/* Indicate required fields */}

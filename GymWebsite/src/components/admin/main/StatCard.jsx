@@ -1,17 +1,22 @@
 import React from "react";
+import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 
-const StatCard = ({ icon, title, value }) => (
-  <div className="flex flex-col justify-between w-full h-48 bg-white dark:bg-slate-50 p-4 rounded-md shadow-xl ">
-    <div className="flex items-center justify-between">
-      <div className="text-4xl text-indigo-950 dark:text-orange-500">
+const StatCard = ({ icon, title, value, trend, trendValue }) => (
+  <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow duration-300">
+    <div className="flex justify-between items-start">
+      <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-opacity-20 bg-blue-100">
         {icon}
       </div>
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+        trend === 'up' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+      }`}>
+        {trend === 'up' ? <FaArrowUp className="mr-1" /> : <FaArrowDown className="mr-1" />}
+        {trendValue}
+      </span>
     </div>
-    <div className="font-extrabold font-Roboto text-2xl text-indigo-950 dark:text-black">
-      {title}
-    </div>
-    <div className="text-2xl font-semibold text-indigo-950 dark:text-black">
-      {value}
+    <div className="mt-4">
+      <h3 className="text-sm font-medium text-gray-500">{title}</h3>
+      <p className="mt-1 text-2xl font-semibold text-gray-900">{value}</p>
     </div>
   </div>
 );
