@@ -2,8 +2,8 @@ from django.contrib.auth import authenticate, get_user_model
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from .models import Trainer
-from .serializers import TrainerSerializer
+from .models import Trainer,Class
+from .serializers import TrainerSerializer,ClassSerializer
 from django.shortcuts import get_object_or_404
 User = get_user_model()
 class TrainerViewSet(viewsets.ViewSet): #Or viewsets.ModelViewSet (if you want all CRUD operations)
@@ -39,7 +39,8 @@ class TrainerViewSet(viewsets.ViewSet): #Or viewsets.ModelViewSet (if you want a
                 username=username,
                 email=email,
                 password=password,
-                first_name=name
+                first_name=name,
+                role="trainer"
             )
 
             # Create the Trainer.  Assumes all fields for Trainer are in request.data
@@ -72,3 +73,83 @@ class TrainerViewSet(viewsets.ViewSet): #Or viewsets.ModelViewSet (if you want a
         trainer = get_object_or_404(queryset, pk=pk)
         trainer.delete()
         return Response({'message': 'Trainer deleted'}, status=status.HTTP_204_NO_CONTENT)
+    
+class ClassViewSet(viewsets.ViewSet):
+    """
+    A simple ViewSet for performing CRUD operations on Class objects.
+    """
+
+    def list(self, request):
+        """
+        List all classes.
+        """
+        queryset = Class.objects.all()
+        serializer = ClassSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+    def create(self, request):
+        """
+        Create a new class.
+        """
+        serializer = ClassSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()  # This also handles creating the related Trainer if necessary
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, pk=None):
+        """
+        Retrieve a single class by its primary key (id).
+        """
+        try:
+            queryset = Class.objects.get(pk=pk)
+        except Class.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ClassSerializer(queryset)
+        return Response(serializer.data)
+
+
+    def update(self, request, pk=None):
+        """
+        Update an existing class.
+        """
+        try:
+            queryset = Class.objects.get(pk=pk)
+        except Class.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ClassSerializer(queryset, data=request.data)  # Pass the existing instance
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def partial_update(self, request, pk=None):
+        """
+        Partially update an existing class.
+        """
+        try:
+            queryset = Class.objects.get(pk=pk)
+        except Class.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ClassSerializer(queryset, data=request.data, partial=True) # Important: partial=True
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    def destroy(self, request, pk=None):
+        """
+        Delete a class.
+        """
+        try:
+            queryset = Class.objects.get(pk=pk)
+        except Class.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        queryset.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

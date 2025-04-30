@@ -15,3 +15,23 @@ class Trainer(models.Model):
 
     def __str__(self):
         return self.name
+
+class Class(models.Model):
+    """
+    Represents a class offered, with details like trainer, timing, and capacity.
+    """
+    id = models.AutoField(primary_key=True)  # Explicitly define and auto-increment the ID
+    trainer_id = models.ForeignKey('Trainer', on_delete=models.CASCADE, related_name='classes')
+    timing = models.DateTimeField()  
+    capacity = models.PositiveIntegerField()  
+
+    def __str__(self):
+        """
+        Returns a string representation of the class (e.g., for display in the Django admin).
+        """
+        return f"Class ID: {self.id}, Trainer: {self.trainer_id}, Timing: {self.timing}"
+
+    class Meta:
+        verbose_name = "Class"
+        verbose_name_plural = "Classes"
+        ordering = ['timing'] 

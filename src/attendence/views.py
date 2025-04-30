@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated , AllowAny
 class AttendanceViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing Attendance records.
-    Provides CRUD operations and custom actions for marking attendance.
+    Provides CRUD operations and custom actions for marking attendaaddnce.
     """
     queryset = Attendance.objects.all().order_by("-check_in")
     serializer_class = AttendanceSerializer
