@@ -1,10 +1,6 @@
 import React, { useEffect } from 'react';
 
 const TrainerDashboard = () => {
-
-
-
-
   return (
     <html lang="en" className="h-full bg-gray-100 dark:bg-gray-900">
       <body className="h-full">
