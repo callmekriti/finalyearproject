@@ -72,11 +72,19 @@ class LoginView(APIView):
             user = serializer.validated_data
             login(request, user)
             token, created = Token.objects.get_or_create(user=user)
+            print(user.email)
+            try:
+                trainer=Trainer.objects.get(email=user.email)
+                id=trainer.id
+                role = 'trainer'
+            except Trainer.DoesNotExist:
+                id=user.id
+                role = user.role
             return Response({
                 'token': token.key,
-                'user_id': user.id,
+                'user_id':id,
                 'username': user.username,
-                'role': user.role
+                'role': role
             }, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

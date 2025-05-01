@@ -78,13 +78,14 @@ class ClassViewSet(viewsets.ViewSet):
     """
     A simple ViewSet for performing CRUD operations on Class objects.
     """
-
+    permission_classes = [AllowAny]
     def list(self, request):
         """
         List all classes.
         """
         queryset = Class.objects.all()
         serializer = ClassSerializer(queryset, many=True)
+        print(serializer.data)
         return Response(serializer.data)
 
 
@@ -92,10 +93,13 @@ class ClassViewSet(viewsets.ViewSet):
         """
         Create a new class.
         """
+        print(request.data)
         serializer = ClassSerializer(data=request.data)
+        
         if serializer.is_valid():
             serializer.save()  # This also handles creating the related Trainer if necessary
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
