@@ -65,6 +65,12 @@ function NavBar({ handleSignOut, showBmiCalculator, setShowBmiCalculator }) {
                   Events
                 </Link>
                 <Link 
+                  to="/classes" 
+                  className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                >
+                  Classes
+                </Link>
+                <Link 
                   to="/settings" 
                   className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
                 >

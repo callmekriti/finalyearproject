@@ -8,7 +8,7 @@ import { GrTransaction } from "react-icons/gr";
 import { GiStrong } from "react-icons/gi";
 import { FaCalendarDays } from "react-icons/fa6";
 import { IoLogOut } from "react-icons/io5";
-
+import { SiGoogleclassroom } from "react-icons/si";
 function Sidebar() {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(true);
@@ -41,6 +41,7 @@ function Sidebar() {
               { to: "/admin/events", icon: <FaCalendarDays />, label: "Events" },
               { to: "/admin/attendance", icon: <MdAnalytics />, label: "Attendance" },
               { to: "/admin/analytics", icon: <MdAnalytics />, label: "Analytics" },
+              { to: "/admin/classes", icon: <SiGoogleclassroom />, label: "Classes" },
             ].map((item, index) => (
               <Link
                 to={item.to}

@@ -14,6 +14,8 @@ import Dashboard from "./components/website/Dashboard.jsx";
 import TrainerDashboard from "./components/website/TrainerDashboard.jsx";
 import AttendanceForm from "./components/website/AttendanceForm.jsx";
 import AttendancePage from "./components/admin/attendance/Attendance.jsx";
+import ClassList from "./components/admin/class/Class.jsx";
+import Class from "./components/website/Class.jsx";
 
 // Lazy loading components
 const Sidebar = lazy(() => import("./components/admin/sidebar/Sidebar"));
@@ -101,7 +103,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/trainerdashboard" element={<TrainerDashboard />} />
             <Route path="/attendance" element={<AttendanceForm />} />
-
+            <Route path="/classes" element={<Class />}/>
             {/* Protected Admin Routes */}
             <Route
               path="/admin"
@@ -117,6 +119,7 @@ function App() {
             >
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<Main />} />
+              <Route path="classes" element={<ClassList/>}/>
               <Route path="members" element={<Member />} />
               <Route path="trainers" element={<Trainer />} />
               <Route path="transactions" element={<Transaction />} />

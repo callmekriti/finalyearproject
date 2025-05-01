@@ -1,148 +1,67 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { format } from "date-fns";
+import React, { useState } from 'react';
+import axios from 'axios';
 
-const Attendance = () => {
-  const [attendanceHistory, setAttendanceHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [currentStreak, setCurrentStreak] = useState(0);
+const AttendanceForm = () => {
+  const [username, setUsername] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    const fetchAttendance = async () => {
-      const userId = localStorage.getItem("userId");
-      
-      if (!userId) {
-        setError("User ID not found. Please log in again.");
-        setLoading(false);
-        return;
-      }
-      
-      try {
-        const response = await axios.get(`http://localhost:8000/attendance/user/${userId}`);
-        setAttendanceHistory(response.data.data || []);
-        
-        // Calculate current streak
-        calculateStreak(response.data.data || []);
-        
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching attendance:", err);
-        setError("Failed to load attendance data. Please try again later.");
-        setLoading(false);
-      }
-    };
-    
-    fetchAttendance();
-  }, []);
-  
-  const calculateStreak = (attendanceData) => {
-    if (!attendanceData || attendanceData.length === 0) {
-      setCurrentStreak(0);
-      return;
-    }
-    
-    // Sort by date (newest first)
-    const sortedAttendance = [...attendanceData].sort((a, b) => 
-      new Date(b.date) - new Date(a.date)
-    );
-    
-    let streak = 1;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // Check if most recent attendance is today or yesterday
-    const mostRecent = new Date(sortedAttendance[0].date);
-    mostRecent.setHours(0, 0, 0, 0);
-    
-    const diffDays = Math.floor((today - mostRecent) / (1000 * 60 * 60 * 24));
-    
-    if (diffDays > 1) {
-      setCurrentStreak(0);
-      return;
-    }
-    
-    // Calculate streak
-    for (let i = 0; i < sortedAttendance.length - 1; i++) {
-      const currentDate = new Date(sortedAttendance[i].date);
-      const prevDate = new Date(sortedAttendance[i + 1].date);
-      
-      currentDate.setHours(0, 0, 0, 0);
-      prevDate.setHours(0, 0, 0, 0);
-      
-      const diffTime = currentDate - prevDate;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
-      if (diffDays === 1) {
-        streak++;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage(''); // Clear any previous messages
+    setError('');
+
+    try {
+      // Send the username to the check-in endpoint
+      const response = await axios.post('http://localhost:8000/attendance/', { username });  // Assuming /api/attendance/ is your endpoint
+
+      if (response.status === 201) {
+        setMessage(response.data.message); // Display the success message from the backend
       } else {
-        break;
+        setError('An unexpected error occurred. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error during check-in:', err);
+      if (err.response) {
+        setError(err.response.data.message || 'Check-in failed. Please check your username and try again.');
+      } else {
+        setError('Network error. Please check your connection.');
       }
     }
-    
-    setCurrentStreak(streak);
   };
 
-  if (loading) {
-    return <div className="p-6 flex justify-center">Loading attendance data...</div>;
-  }
-
-  if (error) {
-    return <div className="p-6 text-red-500">{error}</div>;
-  }
-
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Attendance History</h1>
-      
-      <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-blue-800">Current Streak</h2>
-            <p className="text-sm text-blue-600">Keep it going!</p>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <h2 className="block text-gray-700 text-xl font-bold mb-4">Attendance Check-In</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
+              Username:
+            </label>
+            <input
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="username"
+              type="text"
+              placeholder="Enter your username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
           </div>
-          <div className="text-3xl font-bold text-blue-700">{currentStreak} days</div>
-        </div>
-      </div>
-      
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {attendanceHistory.length === 0 ? (
-              <tr>
-                <td colSpan="3" className="px-6 py-4 text-center text-gray-500">
-                  No attendance records found
-                </td>
-              </tr>
-            ) : (
-              attendanceHistory.map((record, index) => (
-                <tr key={index}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {format(new Date(record.date), "MMMM d, yyyy")}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {record.time_in}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                      Present
-                    </span>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+          <div className="flex items-center justify-between">
+            <button
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              type="submit"
+            >
+              Check-In
+            </button>
+          </div>
+          {message && <p className="text-green-500 text-sm mt-4">{message}</p>}
+          {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
+        </form>
       </div>
     </div>
   );
 };
 
-export default Attendance;
+export default AttendanceForm;
